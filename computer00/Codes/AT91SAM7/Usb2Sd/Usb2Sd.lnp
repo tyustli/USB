@@ -1,0 +1,13 @@
+"SAM7S.obj",
+"main.obj",
+"SystemClock.obj",
+"UART.obj",
+"UsbCore.obj",
+"AT91SAMxUSB.obj",
+"LED.obj",
+"SCSI.obj",
+"SD.obj" 
+TO "Usb2Sd" 
+CASE 
+CLASSES (DATA (0x200000-0x203FFF), 
+CODE (0x100000-0x10FFFF), CONST (0x100000-0x10FFFF)) 

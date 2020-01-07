@@ -1,0 +1,102 @@
+### uVision2 Project, (C) Keil Software
+### Do not modify !
+
+Target (Target 1), 0x0005 // Tools: ''
+
+Group (Source Group 1)
+
+File 1,2,<.\SAM7S.s><SAM7S.s> 0x0 
+File 1,1,<.\main.c><main.c> 0x0 
+File 1,1,<.\SystemClock.c><SystemClock.c> 0x0 
+File 1,1,<.\UART.c><UART.c> 0x0 
+File 1,1,<.\UsbCore.c><UsbCore.c> 0x0 
+File 1,1,<.\AT91SAMxUSB.c><AT91SAMxUSB.c> 0x0 
+File 1,1,<.\LED.C><LED.C> 0x0 
+File 1,1,<.\SCSI.c><SCSI.c> 0x0 
+File 1,1,<.\SD.c><SD.c> 0x0 
+
+
+Options 1,0,0  // Target 'Target 1'
+ Device (AT91SAM7S64)
+ Vendor (Atmel)
+ Cpu (IRAM(0x200000-0x203FFF) IROM(0x100000-0x10FFFF) CLOCK(20000000) CPUTYPE(ARM7TDMI))
+ FlashUt ()
+ StupF ("STARTUP\Atmel\SAM7S.s" ("Atmel AT91SAM7S Startup Code"))
+ FlashDR (UL2ARM(-U44045500 -O15 -S0 -C0 -D00(3F0F0F0F) -L00(4) -FO6 -FD200000 -FC800 -FN1 -FF0AT91SAM7S64 -FS0100000 -FL010000))
+ DevID (3815)
+ Rgf (AT91SAM7S64.H)
+ Mem ()
+ C ()
+ A ()
+ RL ()
+ OH ()
+ DBC_IFX ()
+ DBC_CMS ()
+ DBC_AMS ()
+ DBC_LMS ()
+ UseEnv=0
+ EnvBin ()
+ EnvInc ()
+ EnvLib ()
+ EnvReg (ÿAtmel\SAM7S\)
+ OrgReg (ÿAtmel\SAM7S\)
+ TgStat=0
+ OutDir (.\)
+ OutName (Usb2Sd)
+ GenApp=1
+ GenLib=0
+ GenHex=1
+ Debug=1
+ Browse=1
+ LstDir (.\)
+ HexSel=0
+ MG32K=0
+ TGMORE=0
+ RunUsr 0 0 <>
+ RunUsr 1 0 <>
+ BrunUsr 0 0 <>
+ BrunUsr 1 0 <>
+ SVCSID <>
+ KACPU (ARM7TDMI)
+ TKAFL { 0,64,25,1,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }
+ KIROM { 1,0,0,16,0,0,0,1,0 }
+ KIRAM { 0,0,0,32,0,0,64,0,0 }
+ KXRAM { 0,0,0,0,0,0,0,0,0 }
+ KAOCM { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }
+ KCAFLG { 197,152,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }
+ KCAMSC ()
+ KCADEF ()
+ KCAUDF ()
+ KCAINC ()
+ KAAFLG { 20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }
+ KAAMSC ()
+ KAASET ()
+ KAARST ()
+ KAAINC ()
+ PropFld { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }
+ IncBld=1
+ AlwaysBuild=0
+ GenAsm=0
+ AsmAsm=0
+ PublicsOnly=0
+ StopCode=3
+ CustArgs ()
+ LibMods ()
+ KLAFLG { 44,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }
+ KLAMSC ()
+ KLADWN ()
+ KLACFI ()
+ KLAASN ()
+ KLARES ()
+ KLACCL ()
+ KLAUCL ()
+ KLACSC ()
+ KLAUCS ()
+  OPTDL (SARM.DLL)(-cAT91SAM7S)(DARMATS.DLL)(-p91SAM7S64)(SARM.DLL)()(TARMATS.DLL)(-p91SAM7S64)
+  OPTDBG 49150,0,()()()()()()()()()() (BIN\UL2ARM.DLL)()()()
+ FLASH1 { 1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }
+ FLASH2 (BIN\UL2ARM.DLL)
+ FLASH3 ("" ())
+ FLASH4 ()
+EndOpt
+

@@ -1,0 +1,15 @@
+<html>
+<body>
+<pre>
+<h1>µVision3 Build Log</h1>
+<h2>Project:</h2>
+F:\Keil\work\AT91SAM7\UsbAoudioOutPwm\UsbAudioOutPwm.uv2
+Project File Date:  05/15/2009
+
+<h2>Output:</h2>
+Load "F:\\Keil\\work\\AT91SAM7\\UsbAoudioOutPwm\\AudioOut.ELF" 
+USB Communication Failure
+Load "F:\\Keil\\work\\AT91SAM7\\UsbAoudioOutPwm\\AudioOut.ELF" 
+Erase Done.
+Programming Done.
+Verify OK.

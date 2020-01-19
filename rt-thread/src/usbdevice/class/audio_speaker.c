@@ -16,41 +16,41 @@
 #include "drivers/usb_device.h"
 #include "audio.h"
 
-#define DBG_TAG              "usbd.audio.speaker"
-#define DBG_LVL              DBG_INFO
+#define DBG_TAG "usbd.audio.speaker"
+#define DBG_LVL DBG_INFO
 #include <rtdbg.h>
 
-#define AUDIO_SAMPLERATE   16000
-#define AUDIO_CHANNEL      1
-#define RESOLUTION_BITS    16
+#define AUDIO_SAMPLERATE 16000
+#define AUDIO_CHANNEL 1
+#define RESOLUTION_BITS 16
 
-#define RESOLUTION_BYTE     (RESOLUTION_BITS / 8)
-#define AUDIO_PER_MS_SZ    ((AUDIO_SAMPLERATE * AUDIO_CHANNEL * RESOLUTION_BYTE) / 1000)
-#define AUDIO_BUFFER_SZ    (AUDIO_PER_MS_SZ * 20)  /* 20ms */
+#define RESOLUTION_BYTE (RESOLUTION_BITS / 8)
+#define AUDIO_PER_MS_SZ ((AUDIO_SAMPLERATE * AUDIO_CHANNEL * RESOLUTION_BYTE) / 1000)
+#define AUDIO_BUFFER_SZ (AUDIO_PER_MS_SZ * 20) /* 20ms */
 
 #if defined(RT_USBD_SPEAKER_DEVICE_NAME)
-    #define SPEAKER_DEVICE_NAME    RT_USBD_SPEAKER_DEVICE_NAME
+#define SPEAKER_DEVICE_NAME RT_USBD_SPEAKER_DEVICE_NAME
 #else
-    #define SPEAKER_DEVICE_NAME    "sound0"
+#define SPEAKER_DEVICE_NAME "sound0"
 #endif
 
-#define EVENT_AUDIO_START   (1 << 0)
-#define EVENT_AUDIO_STOP    (1 << 1)
-#define EVENT_AUDIO_DATA    (1 << 2)
+#define EVENT_AUDIO_START (1 << 0)
+#define EVENT_AUDIO_STOP (1 << 1)
+#define EVENT_AUDIO_DATA (1 << 2)
 
 /*
  * uac speaker descriptor define
  */
 
-#define UAC_CS_INTERFACE            0x24
-#define UAC_CS_ENDPOINT             0x25
+#define UAC_CS_INTERFACE 0x24
+#define UAC_CS_ENDPOINT 0x25
 
-#define UAC_MAX_PACKET_SIZE         64
-#define UAC_EP_MAX_PACKET_SIZE      32
-#define UAC_CHANNEL_NUM             AUDIO_CHANNEL
-#define UAC_INTR_NUM                1
-#define UAC_CH_NUM                  1
-#define UAC_FORMAT_NUM              1
+#define UAC_MAX_PACKET_SIZE 64
+#define UAC_EP_MAX_PACKET_SIZE 32
+#define UAC_CHANNEL_NUM AUDIO_CHANNEL
+#define UAC_INTR_NUM 1
+#define UAC_CH_NUM 1
+#define UAC_FORMAT_NUM 1
 
 struct uac_ac_descriptor
 {
@@ -58,11 +58,13 @@ struct uac_ac_descriptor
     struct uiad_descriptor iad_desc;
 #endif
     struct uinterface_descriptor intf_desc;
-    DECLARE_UAC_AC_HEADER_DESCRIPTOR(UAC_INTR_NUM) hdr_desc;
+    DECLARE_UAC_AC_HEADER_DESCRIPTOR(UAC_INTR_NUM)
+    hdr_desc;
     struct uac_input_terminal_descriptor it_desc;
     struct uac1_output_terminal_descriptor ot_desc;
 #if UAC_USE_FEATURE_UNIT
-    DECLARE_UAC_FEATURE_UNIT_DESCRIPTOR(UAC_CH_NUM) feature_unit_desc;
+    DECLARE_UAC_FEATURE_UNIT_DESCRIPTOR(UAC_CH_NUM)
+    feature_unit_desc;
 #endif
 };
 
@@ -70,7 +72,8 @@ struct uac_as_descriptor
 {
     struct uinterface_descriptor intf_desc;
     struct uac1_as_header_descriptor hdr_desc;
-    DECLARE_UAC_FORMAT_TYPE_I_DISCRETE_DESC(UAC_FORMAT_NUM) format_type_desc;
+    DECLARE_UAC_FORMAT_TYPE_I_DISCRETE_DESC(UAC_FORMAT_NUM)
+    format_type_desc;
     struct uendpoint_descriptor ep_desc;
     struct uac_iso_endpoint_descriptor as_ep_desc;
 };
@@ -81,203 +84,203 @@ struct uac_as_descriptor
 
 struct uac_audio_speaker
 {
-    rt_device_t  dev;
-    rt_event_t   event;
-    rt_uint8_t   open_count;
+    rt_device_t dev;
+    rt_event_t event;
+    rt_uint8_t open_count;
 
-    rt_uint8_t  *buffer;
-    rt_uint32_t  buffer_index;
+    rt_uint8_t *buffer;
+    rt_uint32_t buffer_index;
 
-    uep_t        ep;
+    uep_t ep;
 };
 static struct uac_audio_speaker speaker;
 
 ALIGN(4)
 static struct udevice_descriptor dev_desc =
-{
-    USB_DESC_LENGTH_DEVICE,     //bLength;
-    USB_DESC_TYPE_DEVICE,       //type;
-    USB_BCD_VERSION,            //bcdUSB;
-    USB_CLASS_DEVICE,           //bDeviceClass;
-    0x00,                       //bDeviceSubClass;
-    0x00,                       //bDeviceProtocol;
-    UAC_MAX_PACKET_SIZE,        //bMaxPacketSize0;
-    _VENDOR_ID,                 //idVendor;
-    _PRODUCT_ID,                //idProduct;
-    USB_BCD_DEVICE,             //bcdDevice;
-    USB_STRING_MANU_INDEX,      //iManufacturer;
-    USB_STRING_PRODUCT_INDEX,   //iProduct;
-    USB_STRING_SERIAL_INDEX,    //iSerialNumber;Unused.
-    USB_DYNAMIC,                //bNumConfigurations;
+    {
+        USB_DESC_LENGTH_DEVICE,   //bLength;
+        USB_DESC_TYPE_DEVICE,     //type;
+        USB_BCD_VERSION,          //bcdUSB;
+        USB_CLASS_DEVICE,         //bDeviceClass;
+        0x00,                     //bDeviceSubClass;
+        0x00,                     //bDeviceProtocol;
+        UAC_MAX_PACKET_SIZE,      //bMaxPacketSize0;
+        _VENDOR_ID,               //idVendor;
+        _PRODUCT_ID,              //idProduct;
+        USB_BCD_DEVICE,           //bcdDevice;
+        USB_STRING_MANU_INDEX,    //iManufacturer;
+        USB_STRING_PRODUCT_INDEX, //iProduct;
+        USB_STRING_SERIAL_INDEX,  //iSerialNumber;Unused.
+        USB_DYNAMIC,              //bNumConfigurations;
 };
 
 //FS and HS needed
 ALIGN(4)
 static struct usb_qualifier_descriptor dev_qualifier =
-{
-    sizeof(dev_qualifier),          //bLength
-    USB_DESC_TYPE_DEVICEQUALIFIER,  //bDescriptorType
-    0x0200,                         //bcdUSB
-    USB_CLASS_AUDIO,                //bDeviceClass
-    0x00,                           //bDeviceSubClass
-    0x00,                           //bDeviceProtocol
-    64,                             //bMaxPacketSize0
-    0x01,                           //bNumConfigurations
-    0,
+    {
+        sizeof(dev_qualifier),         //bLength
+        USB_DESC_TYPE_DEVICEQUALIFIER, //bDescriptorType
+        0x0200,                        //bcdUSB
+        USB_CLASS_AUDIO,               //bDeviceClass
+        0x00,                          //bDeviceSubClass
+        0x00,                          //bDeviceProtocol
+        64,                            //bMaxPacketSize0
+        0x01,                          //bNumConfigurations
+        0,
 };
 
 ALIGN(4)
 const static char *_ustring[] =
-{
-    "Language",
-    "RT-Thread Team.",
-    "RT-Thread Speaker",
-    "32021919830108",
-    "Configuration",
-    "Interface",
+    {
+        "Language",
+        "RT-Thread Team.",
+        "RT-Thread Speaker",
+        "32021919830108",
+        "Configuration",
+        "Interface",
 };
 
 ALIGN(4)
 static struct uac_ac_descriptor ac_desc =
-{
+    {
 #ifdef RT_USB_DEVICE_COMPOSITE
-    /* Interface Association Descriptor */
-    {
-        USB_DESC_LENGTH_IAD,
-        USB_DESC_TYPE_IAD,
-        USB_DYNAMIC,
-        0x02,
-        USB_CLASS_AUDIO,
-        USB_SUBCLASS_AUDIOSTREAMING,
-        0x00,
-        0x00,
-    },
+        /* Interface Association Descriptor */
+        {
+            USB_DESC_LENGTH_IAD,
+            USB_DESC_TYPE_IAD,
+            USB_DYNAMIC,
+            0x02,
+            USB_CLASS_AUDIO,
+            USB_SUBCLASS_AUDIOSTREAMING,
+            0x00,
+            0x00,
+        },
 #endif
-    /* Interface Descriptor */
-    {
-        USB_DESC_LENGTH_INTERFACE,
-        USB_DESC_TYPE_INTERFACE,
-        USB_DYNAMIC,
-        0x00,
-        0x00,
-        USB_CLASS_AUDIO,
-        USB_SUBCLASS_AUDIOCONTROL,
-        0x00,
-        0x00,
-    },
-    /* Header Descriptor */
-    {
-        UAC_DT_AC_HEADER_SIZE(UAC_INTR_NUM),
-        UAC_CS_INTERFACE,
-        UAC_HEADER,
-        0x0100,    /* Version: 1.00 */
-        0x0027,    /* Total length: 39 */
-        0x01,      /* Total number of interfaces: 1 */
-        {0x01},    /* Interface number: 1 */
-    },
-    /*  Input Terminal Descriptor */
-    {
-        UAC_DT_INPUT_TERMINAL_SIZE,
-        UAC_CS_INTERFACE,
-        UAC_INPUT_TERMINAL,
-        0x01,      /* Terminal ID: 1 */
-        0x0101,    /* Terminal Type: USB Streaming (0x0101) */
-        0x00,      /* Assoc Terminal: 0 */
-        0x01,      /* Number Channels: 1 */
-        0x0000,    /* Channel Config: 0x0000 */
-        0x00,      /* Channel Names: 0 */
-        0x00,      /* Terminal: 0 */
-    },
-    /*  Output Terminal Descriptor */
-    {
-        UAC_DT_OUTPUT_TERMINAL_SIZE,
-        UAC_CS_INTERFACE,
-        UAC_OUTPUT_TERMINAL,
-        0x02,      /* Terminal ID: 2 */
-        0x0302,    /* Terminal Type: Headphones (0x0302) */
-        0x00,      /* Assoc Terminal: 0 */
-        0x01,      /* Source ID: 1 */
-        0x00,      /* Terminal: 0 */
-    },
+        /* Interface Descriptor */
+        {
+            USB_DESC_LENGTH_INTERFACE,
+            USB_DESC_TYPE_INTERFACE,
+            USB_DYNAMIC,
+            0x00,
+            0x00,
+            USB_CLASS_AUDIO,
+            USB_SUBCLASS_AUDIOCONTROL,
+            0x00,
+            0x00,
+        },
+        /* Header Descriptor */
+        {
+            UAC_DT_AC_HEADER_SIZE(UAC_INTR_NUM),
+            UAC_CS_INTERFACE,
+            UAC_HEADER,
+            0x0100, /* Version: 1.00 */
+            0x0027, /* Total length: 39 */
+            0x01,   /* Total number of interfaces: 1 */
+            {0x01}, /* Interface number: 1 */
+        },
+        /*  Input Terminal Descriptor */
+        {
+            UAC_DT_INPUT_TERMINAL_SIZE,
+            UAC_CS_INTERFACE,
+            UAC_INPUT_TERMINAL,
+            0x01,   /* Terminal ID: 1 */
+            0x0101, /* Terminal Type: USB Streaming (0x0101) */
+            0x00,   /* Assoc Terminal: 0 */
+            0x01,   /* Number Channels: 1 */
+            0x0000, /* Channel Config: 0x0000 */
+            0x00,   /* Channel Names: 0 */
+            0x00,   /* Terminal: 0 */
+        },
+        /*  Output Terminal Descriptor */
+        {
+            UAC_DT_OUTPUT_TERMINAL_SIZE,
+            UAC_CS_INTERFACE,
+            UAC_OUTPUT_TERMINAL,
+            0x02,   /* Terminal ID: 2 */
+            0x0302, /* Terminal Type: Headphones (0x0302) */
+            0x00,   /* Assoc Terminal: 0 */
+            0x01,   /* Source ID: 1 */
+            0x00,   /* Terminal: 0 */
+        },
 #if UAC_USE_FEATURE_UNIT
-    /*  Feature unit Descriptor */
-    {
-        UAC_DT_FEATURE_UNIT_SIZE(UAC_CH_NUM),
-        UAC_CS_INTERFACE,
-        UAC_FEATURE_UNIT,
-        0x02,
-        0x0101,
-        0x00,
-        0x01,
-    },
+        /*  Feature unit Descriptor */
+        {
+            UAC_DT_FEATURE_UNIT_SIZE(UAC_CH_NUM),
+            UAC_CS_INTERFACE,
+            UAC_FEATURE_UNIT,
+            0x02,
+            0x0101,
+            0x00,
+            0x01,
+        },
 #endif
 };
 
 ALIGN(4)
 static struct uinterface_descriptor as_desc0 =
-{
-    USB_DESC_LENGTH_INTERFACE,
-    USB_DESC_TYPE_INTERFACE,
-    USB_DYNAMIC,
-    0x00,
-    0x00,
-    USB_CLASS_AUDIO,
-    USB_SUBCLASS_AUDIOSTREAMING,
-    0x00,
-    0x00,
-};
-
-ALIGN(4)
-static struct uac_as_descriptor as_desc =
-{
-    /* Interface Descriptor */
     {
         USB_DESC_LENGTH_INTERFACE,
         USB_DESC_TYPE_INTERFACE,
         USB_DYNAMIC,
-        0x01,
-        0x01,
+        0x00,
+        0x00,
         USB_CLASS_AUDIO,
         USB_SUBCLASS_AUDIOSTREAMING,
         0x00,
         0x00,
-    },
-    /* General AS Descriptor */
+};
+
+ALIGN(4)
+static struct uac_as_descriptor as_desc =
     {
-        UAC_DT_AS_HEADER_SIZE,
-        UAC_CS_INTERFACE,
-        UAC_AS_GENERAL,
-        0x01,      /* Terminal ID: 1 */
-        0x01,      /* Interface delay in frames: 1 */
-        UAC_FORMAT_TYPE_I_PCM,
-    },
-    /* Format type i Descriptor */
-    {
-        UAC_FORMAT_TYPE_I_DISCRETE_DESC_SIZE(UAC_FORMAT_NUM),
-        UAC_CS_INTERFACE,
-        UAC_FORMAT_TYPE,
-        UAC_FORMAT_TYPE_I,
-        UAC_CHANNEL_NUM,
-        2,         /* Subframe Size: 2 */
-        RESOLUTION_BITS,
-        0x01,      /* Samples Frequence Type: 1 */
-        {0},       /* Samples Frequence */
-    },
-    /* Endpoint Descriptor */
-    {
-        USB_DESC_LENGTH_ENDPOINT,
-        USB_DESC_TYPE_ENDPOINT,
-        USB_DYNAMIC | USB_DIR_OUT,
-        USB_EP_ATTR_ISOC,
-        UAC_EP_MAX_PACKET_SIZE,
-        0x01,
-    },
-    /* AS Endpoint Descriptor */
-    {
-        UAC_ISO_ENDPOINT_DESC_SIZE,
-        UAC_CS_ENDPOINT,
-        UAC_MS_GENERAL,
-    },
+        /* Interface Descriptor */
+        {
+            USB_DESC_LENGTH_INTERFACE,
+            USB_DESC_TYPE_INTERFACE,
+            USB_DYNAMIC,
+            0x01,
+            0x01,
+            USB_CLASS_AUDIO,
+            USB_SUBCLASS_AUDIOSTREAMING,
+            0x00,
+            0x00,
+        },
+        /* General AS Descriptor */
+        {
+            UAC_DT_AS_HEADER_SIZE,
+            UAC_CS_INTERFACE,
+            UAC_AS_GENERAL,
+            0x01, /* Terminal ID: 1 */
+            0x01, /* Interface delay in frames: 1 */
+            UAC_FORMAT_TYPE_I_PCM,
+        },
+        /* Format type i Descriptor */
+        {
+            UAC_FORMAT_TYPE_I_DISCRETE_DESC_SIZE(UAC_FORMAT_NUM),
+            UAC_CS_INTERFACE,
+            UAC_FORMAT_TYPE,
+            UAC_FORMAT_TYPE_I,
+            UAC_CHANNEL_NUM,
+            2, /* Subframe Size: 2 */
+            RESOLUTION_BITS,
+            0x01, /* Samples Frequence Type: 1 */
+            {0},  /* Samples Frequence */
+        },
+        /* Endpoint Descriptor */
+        {
+            USB_DESC_LENGTH_ENDPOINT,
+            USB_DESC_TYPE_ENDPOINT,
+            USB_DYNAMIC | USB_DIR_OUT,
+            USB_EP_ATTR_ISOC,
+            UAC_EP_MAX_PACKET_SIZE,
+            0x01,
+        },
+        /* AS Endpoint Descriptor */
+        {
+            UAC_ISO_ENDPOINT_DESC_SIZE,
+            UAC_CS_ENDPOINT,
+            UAC_MS_GENERAL,
+        },
 };
 
 void speaker_entry(void *parameter)
@@ -315,10 +318,10 @@ void speaker_entry(void *parameter)
 
         rt_device_open(speaker.dev, RT_DEVICE_OFLAG_WRONLY);
 
-        caps.main_type               = AUDIO_TYPE_OUTPUT;
-        caps.sub_type                = AUDIO_DSP_PARAM;
+        caps.main_type = AUDIO_TYPE_OUTPUT;
+        caps.sub_type = AUDIO_DSP_PARAM;
         caps.udata.config.samplerate = AUDIO_SAMPLERATE;
-        caps.udata.config.channels   = AUDIO_CHANNEL;
+        caps.udata.config.channels = AUDIO_CHANNEL;
         caps.udata.config.samplebits = RESOLUTION_BITS;
         rt_device_control(speaker.dev, AUDIO_CTL_CONFIGURE, &caps);
 
@@ -359,7 +362,7 @@ static rt_err_t _audio_start(ufunction_t func)
     speaker.ep->request.req_type = UIO_REQUEST_READ_FULL;
     rt_usbd_io_request(func->device, speaker.ep, &speaker.ep->request);
 
-    speaker.open_count ++;
+    speaker.open_count++;
     rt_event_send(speaker.event, EVENT_AUDIO_START);
 
     return 0;
@@ -367,7 +370,7 @@ static rt_err_t _audio_start(ufunction_t func)
 
 static rt_err_t _audio_stop(ufunction_t func)
 {
-    speaker.open_count --;
+    speaker.open_count--;
     rt_event_send(speaker.event, EVENT_AUDIO_STOP);
     return 0;
 }
@@ -449,10 +452,10 @@ static rt_err_t _function_disable(ufunction_t func)
 }
 
 static struct ufunction_ops ops =
-{
-    _function_enable,
-    _function_disable,
-    RT_NULL,
+    {
+        _function_enable,
+        _function_disable,
+        RT_NULL,
 };
 /**
  * This function will configure uac descriptor.
@@ -566,9 +569,8 @@ INIT_COMPONENT_EXPORT(audio_speaker_init);
  *  register uac class
  */
 static struct udclass uac_speaker_class =
-{
-    .rt_usbd_function_create = rt_usbd_function_uac_speaker_create
-};
+    {
+        .rt_usbd_function_create = rt_usbd_function_uac_speaker_create};
 
 int rt_usbd_uac_speaker_class_register(void)
 {

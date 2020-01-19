@@ -19,6 +19,6 @@ struct winusb_descriptor
     struct uendpoint_descriptor ep_out_desc;
     struct uendpoint_descriptor ep_in_desc;
 };
-typedef struct winusb_descriptor* winusb_desc_t;
+typedef struct winusb_descriptor *winusb_desc_t;
 
 #endif

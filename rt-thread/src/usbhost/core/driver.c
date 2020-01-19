@@ -24,7 +24,7 @@ rt_err_t rt_usbh_class_driver_init(void)
 {
     rt_list_init(&_driver_list);
 
-    return RT_EOK;    
+    return RT_EOK;
 }
 
 /**
@@ -37,12 +37,13 @@ rt_err_t rt_usbh_class_driver_init(void)
 
 rt_err_t rt_usbh_class_driver_register(ucd_t drv)
 {
-    if (drv == RT_NULL) return -RT_ERROR;
+    if (drv == RT_NULL)
+        return -RT_ERROR;
 
     /* insert class driver into driver list */
     rt_list_insert_after(&_driver_list, &(drv->list));
-    
-    return RT_EOK;    
+
+    return RT_EOK;
 }
 
 /**
@@ -70,11 +71,11 @@ rt_err_t rt_usbh_class_driver_unregister(ucd_t drv)
  * 
  * @return the error code, RT_EOK on successfully.
  */
-rt_err_t rt_usbh_class_driver_enable(ucd_t drv, void* args)
+rt_err_t rt_usbh_class_driver_enable(ucd_t drv, void *args)
 {
     RT_ASSERT(drv != RT_NULL);
 
-    if(drv->enable != RT_NULL)
+    if (drv->enable != RT_NULL)
         drv->enable(args);
 
     return RT_EOK;
@@ -88,16 +89,15 @@ rt_err_t rt_usbh_class_driver_enable(ucd_t drv, void* args)
  * 
  * @return the error code, RT_EOK on successfully.
  */
-rt_err_t rt_usbh_class_driver_disable(ucd_t drv, void* args)
+rt_err_t rt_usbh_class_driver_disable(ucd_t drv, void *args)
 {
     RT_ASSERT(drv != RT_NULL);
 
-    if(drv->disable != RT_NULL)
+    if (drv->disable != RT_NULL)
         drv->disable(args);
 
     return RT_EOK;
 }
-
 
 /**
  * This function finds a usb class driver by specified class code and subclass code.
@@ -118,7 +118,7 @@ ucd_t rt_usbh_class_driver_find(int class_code, int subclass_code)
     /* try to find driver object */
     for (node = _driver_list.next; node != &_driver_list; node = node->next)
     {
-        ucd_t drv = 
+        ucd_t drv =
             (ucd_t)rt_list_entry(node, struct uclass_driver, list);
         if (drv->class_code == class_code)
         {
@@ -137,4 +137,3 @@ ucd_t rt_usbh_class_driver_find(int class_code, int subclass_code)
     /* not found */
     return RT_NULL;
 }
-

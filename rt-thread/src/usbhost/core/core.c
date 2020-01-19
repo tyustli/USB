@@ -312,17 +312,17 @@ rt_err_t rt_usbh_get_descriptor(uinst_t device, rt_uint8_t type, void *buffer,
     RT_ASSERT(device != RT_NULL);
 
     setup.request_type = USB_REQ_TYPE_DIR_IN | USB_REQ_TYPE_STANDARD |
-                         USB_REQ_TYPE_DEVICE;
+                         USB_REQ_TYPE_DEVICE; /* 数据输入，标准请求 请求的接受者是设备 */
     setup.bRequest = USB_REQ_GET_DESCRIPTOR;
     setup.wIndex = 0;
     setup.wLength = nbytes;
     setup.wValue = type << 8;
 
-    if (rt_usb_hcd_setup_xfer(device->hcd, device->pipe_ep0_out, &setup, timeout) == 8)
+    if (rt_usb_hcd_setup_xfer(device->hcd, device->pipe_ep0_out, &setup, timeout) == 8) /* 建立过程 */
     {
-        if (rt_usb_hcd_pipe_xfer(device->hcd, device->pipe_ep0_in, buffer, nbytes, timeout) == nbytes)
+        if (rt_usb_hcd_pipe_xfer(device->hcd, device->pipe_ep0_in, buffer, nbytes, timeout) == nbytes) /* 数据过程 */
         {
-            if (rt_usb_hcd_pipe_xfer(device->hcd, device->pipe_ep0_out, RT_NULL, 0, timeout) == 0)
+            if (rt_usb_hcd_pipe_xfer(device->hcd, device->pipe_ep0_out, RT_NULL, 0, timeout) == 0) /* 状态过程 */
             {
                 return RT_EOK;
             }
@@ -348,17 +348,17 @@ rt_err_t rt_usbh_set_address(uinst_t device)
     RT_DEBUG_LOG(RT_DEBUG_USB, ("rt_usb_set_address\n"));
 
     setup.request_type = USB_REQ_TYPE_DIR_OUT | USB_REQ_TYPE_STANDARD |
-                         USB_REQ_TYPE_DEVICE;
+                         USB_REQ_TYPE_DEVICE; /* 数据输出，标准请求 请求的接受者是设备 */
     setup.bRequest = USB_REQ_SET_ADDRESS;
     setup.wIndex = 0;
     setup.wLength = 0;
-    setup.wValue = device->index;
+    setup.wValue = device->index; /* 地址 */
 
-    if (rt_usb_hcd_setup_xfer(device->hcd, device->pipe_ep0_out, &setup, timeout) != 8)
+    if (rt_usb_hcd_setup_xfer(device->hcd, device->pipe_ep0_out, &setup, timeout) != 8) /* 建立过程 */
     {
         return RT_ERROR;
     }
-    if (rt_usb_hcd_pipe_xfer(device->hcd, device->pipe_ep0_in, RT_NULL, 0, timeout) == 0)
+    if (rt_usb_hcd_pipe_xfer(device->hcd, device->pipe_ep0_in, RT_NULL, 0, timeout) == 0) /* 状态过程 */
     {
         device->address = device->index;
     }
@@ -383,17 +383,17 @@ rt_err_t rt_usbh_set_configure(uinst_t device, int config)
     RT_ASSERT(device != RT_NULL);
 
     setup.request_type = USB_REQ_TYPE_DIR_OUT | USB_REQ_TYPE_STANDARD |
-                         USB_REQ_TYPE_DEVICE;
+                         USB_REQ_TYPE_DEVICE; /* 数据输出，标准请求 请求的接受者是设备 */
     setup.bRequest = USB_REQ_SET_CONFIGURATION;
     setup.wIndex = 0;
     setup.wLength = 0;
     setup.wValue = config;
 
-    if (rt_usb_hcd_setup_xfer(device->hcd, device->pipe_ep0_out, &setup, timeout) != 8)
+    if (rt_usb_hcd_setup_xfer(device->hcd, device->pipe_ep0_out, &setup, timeout) != 8) /* 建立过程 */
     {
         return RT_ERROR;
     }
-    if (rt_usb_hcd_pipe_xfer(device->hcd, device->pipe_ep0_in, RT_NULL, 0, timeout) != 0)
+    if (rt_usb_hcd_pipe_xfer(device->hcd, device->pipe_ep0_in, RT_NULL, 0, timeout) != 0) /* 状态过程 */
     {
         return RT_ERROR;
     }
@@ -417,7 +417,7 @@ rt_err_t rt_usbh_set_interface(uinst_t device, int intf)
     RT_ASSERT(device != RT_NULL);
 
     setup.request_type = USB_REQ_TYPE_DIR_OUT | USB_REQ_TYPE_STANDARD |
-                         USB_REQ_TYPE_INTERFACE;
+                         USB_REQ_TYPE_INTERFACE; /* 数据输出，标准请求 请求的接受者是接口 */
     setup.bRequest = USB_REQ_SET_INTERFACE;
     setup.wIndex = 0;
     setup.wLength = 0;
@@ -448,7 +448,7 @@ rt_err_t rt_usbh_clear_feature(uinst_t device, int endpoint, int feature)
     RT_ASSERT(device != RT_NULL);
 
     setup.request_type = USB_REQ_TYPE_DIR_OUT | USB_REQ_TYPE_STANDARD |
-                         USB_REQ_TYPE_ENDPOINT;
+                         USB_REQ_TYPE_ENDPOINT; /* 数据输出，标准请求 请求的接受者是端点 */
     setup.bRequest = USB_REQ_CLEAR_FEATURE;
     setup.wIndex = endpoint;
     setup.wLength = 0;
@@ -464,7 +464,7 @@ rt_err_t rt_usbh_clear_feature(uinst_t device, int endpoint, int feature)
 
 /**
  * This function will get an interface descriptor from the configuration descriptor.
- *
+ * 从配置描述符集合中获取接口描述符
  * @param cfg_desc the point of configuration descriptor structure.
  * @param num the number of interface descriptor.
  * @intf_desc the point of interface descriptor point.
@@ -509,7 +509,7 @@ rt_err_t rt_usbh_get_interface_descriptor(ucfg_desc_t cfg_desc, int num,
 
 /**
  * This function will get an endpoint descriptor from the interface descriptor.
- *
+ * 从配置描述符集合中获取端点描述符
  * @param intf_desc the point of interface descriptor structure.
  * @param num the number of endpoint descriptor.
  * @param ep_desc the point of endpoint descriptor point.
@@ -567,15 +567,16 @@ int rt_usb_hcd_pipe_xfer(uhcd_t hcd, upipe_t pipe, void *buffer, int nbytes, int
     {
         RT_DEBUG_LOG(RT_DEBUG_USB, ("pipe transform remain size,: %d\n", remain_size));
         send_size = (remain_size > pipe->ep.wMaxPacketSize) ? pipe->ep.wMaxPacketSize : remain_size;
-        if (hcd->ops->pipe_xfer(pipe, USBH_PID_DATA, pbuffer, send_size, timeout) == send_size)
+        if (hcd->ops->pipe_xfer(pipe, USBH_PID_DATA, pbuffer, send_size, timeout) == send_size) /* 发送数据包 */
         {
-            remain_size -= send_size;
-            pbuffer += send_size;
+            remain_size -= send_size; /* 剩余数据包大小 */
+            pbuffer += send_size; /* 发送指针后移 */
         }
         else
         {
             return 0;
         }
     } while (remain_size > 0);
+
     return nbytes;
 }

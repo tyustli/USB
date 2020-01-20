@@ -271,7 +271,7 @@ extern "C"
         rt_uint8_t bLength;
         rt_uint8_t type;
     };
-    typedef struct usb_descriptor *udesc_t;
+    typedef struct usb_descriptor *udesc_t; /* 枚举阶段 USB 的描述符的前两个都是描述符的长的和描述符的类型，所以可以抽象出来并用来偏移 */
 
     struct udevice_descriptor
     {

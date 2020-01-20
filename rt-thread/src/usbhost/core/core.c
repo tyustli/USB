@@ -328,6 +328,7 @@ rt_err_t rt_usbh_get_descriptor(uinst_t device, rt_uint8_t type, void *buffer,
             }
         }
     }
+
     return RT_ERROR;
 }
 
@@ -465,9 +466,9 @@ rt_err_t rt_usbh_clear_feature(uinst_t device, int endpoint, int feature)
 /**
  * This function will get an interface descriptor from the configuration descriptor.
  * 从配置描述符集合中获取接口描述符
- * @param cfg_desc the point of configuration descriptor structure.
- * @param num the number of interface descriptor.
- * @intf_desc the point of interface descriptor point.
+ * @param cfg_desc the point of configuration descriptor structure. 配置描述符集合
+ * @param num the number of interface descriptor.                   要获取的第几个接口描述符
+ * @intf_desc the point of interface descriptor point.              获取到的接口描述符
  * 
  * @return the error code, RT_EOK on successfully.
  */
@@ -491,9 +492,9 @@ rt_err_t rt_usbh_get_interface_descriptor(ucfg_desc_t cfg_desc, int num,
         desc = (udesc_t)ptr;
         if (desc->type == USB_DESC_TYPE_INTERFACE)
         {
-            if (((uintf_desc_t)desc)->bInterfaceNumber == num)
+            if (((uintf_desc_t)desc)->bInterfaceNumber == num) /* 要获取接口描述符的编号 */
             {
-                *intf_desc = (uintf_desc_t)desc;
+                *intf_desc = (uintf_desc_t)desc; /* 返回当前接口描述符的起始指针 */
 
                 RT_DEBUG_LOG(RT_DEBUG_USB,
                              ("rt_usb_get_interface_descriptor: %d\n", num));
@@ -509,10 +510,10 @@ rt_err_t rt_usbh_get_interface_descriptor(ucfg_desc_t cfg_desc, int num,
 
 /**
  * This function will get an endpoint descriptor from the interface descriptor.
- * 从配置描述符集合中获取端点描述符
- * @param intf_desc the point of interface descriptor structure.
- * @param num the number of endpoint descriptor.
- * @param ep_desc the point of endpoint descriptor point.
+ * 从接口描述符集合中获取端点描述符
+ * @param intf_desc the point of interface descriptor structure. 接口描述符
+ * @param num the number of endpoint descriptor.                 要获取的第几个端点描述符
+ * @param ep_desc the point of endpoint descriptor point.        获取到的端点描述符
  * 
  * @return the error code, RT_EOK on successfully.
  */
@@ -548,7 +549,9 @@ rt_err_t rt_usbh_get_endpoint_descriptor(uintf_desc_t intf_desc, int num,
                 return RT_EOK;
             }
             else
+            {
                 count++;
+            }
         }
         ptr = (rt_uint32_t)desc + desc->bLength;
     }
@@ -557,6 +560,17 @@ rt_err_t rt_usbh_get_endpoint_descriptor(uintf_desc_t intf_desc, int num,
     return -RT_EIO;
 }
 
+/* 数据传输函数
+ *
+ * 参数：
+ * hcd:主机控制器驱动句柄
+ * pipe:数据传输通道
+ * buffer:需要传输数据的指针
+ * nbytes:需要传输数据的长度
+ * timeout:超时时间
+ *
+ * 返回值:传输成功的字节数 
+ */
 int rt_usb_hcd_pipe_xfer(uhcd_t hcd, upipe_t pipe, void *buffer, int nbytes, int timeout)
 {
     rt_size_t remain_size;
